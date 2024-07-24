@@ -24,6 +24,7 @@ public class FileManagement {
                     throw new IOException("Failed to create directory " + UPLOAD_DIR);
                 }
             }
+            
             // define destination file
             File destinationFile = new File(dir, fileUpload.getOriginalFilename());
             // save file
