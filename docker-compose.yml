@@ -28,3 +28,5 @@ services:
       PMA_PORT: 3306
     depends_on:
       - db
+
+# how to use "docker-compose up --build"

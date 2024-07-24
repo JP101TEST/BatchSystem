@@ -1,0 +1,4 @@
+name,gender
+cha,male
+ja,female
+ku,male
