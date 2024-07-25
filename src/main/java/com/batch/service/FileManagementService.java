@@ -78,6 +78,8 @@ public class FileManagementService {
                     String dateCreate = convertCreateDateFromPathToString(path);
                     fileLists.add(new FileRespond(path.getFileName().toString(), dateCreate));
                 }
+
+                deleteFileByCheckEqualsBetweenPathAndFilename(path,"New Microsoft Excel Worksheet.xlsx");
             }
             message = "Get all files successful.";
             return new ResponseWithData(Integer.toString(200), message, fileLists);
@@ -140,6 +142,7 @@ public class FileManagementService {
             return false;
         }
     }
+
 
     // ### private class ###
     @Data
