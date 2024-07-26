@@ -1,4 +1,4 @@
-package com.batch.entity;
+package com.batch.entity.mysql;
 
 import jakarta.persistence.*;
 import lombok.Data;

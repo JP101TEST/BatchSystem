@@ -1,6 +1,6 @@
-package com.batch.repository;
+package com.batch.repository.mysql;
 
-import com.batch.entity.Mo;
+import com.batch.entity.mysql.Mo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

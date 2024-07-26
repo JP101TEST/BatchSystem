@@ -1,9 +1,14 @@
 package com.batch.service;
 
+import com.batch.dto.request.UserReq;
+import com.batch.entity.mongodb.User;
 import com.batch.dto.response.ResponseGeneral;
 import com.batch.dto.response.ResponseWithData;
+import com.batch.repository.mongodb.UserRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +31,11 @@ public class FileManagementService {
     private static final String LOCAL_STORE_DIR = "localStore";
     private static final String BACKUP_STORE_DIR = "backupStore";
     private static final String[] ALLOWED_FILE_TYPES = {"txt", "csv", "xlsx", "json", "xml"};
+
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * File and Path are same function but different packages
@@ -92,6 +102,21 @@ public class FileManagementService {
 
     public Object deleteFile(String filename) {
         return null;
+    }
+
+    public void testAddUser(String req) throws JsonProcessingException {
+        UserReq userReq = objectMapper.readValue(req,UserReq.class);
+        User user = objectMapper.convertValue(userReq,User.class);
+        System.out.println("user:"+user);
+        System.out.println(userRepository.save(user).getId());
+    }
+
+    public  Object getUser(){
+        return userRepository.findAll();
+    }
+
+    public Object getByName(String name){
+        return userRepository.findByName(name);
     }
 
     // ### private method ###

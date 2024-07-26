@@ -9,6 +9,8 @@ public class Batch {
     private static final String LOCAL_STORE_DIR = "localStore";
     private static final String BACKUP_STORE_DIR = "backupStore";
     private static final String[] ALLOWED_FILE_TYPES = {"txt", "csv", "xlsx", "json", "xml"};
+    private static final String[] ALLOWED_SQL = {"txt", "csv", "xlsx"};
+    private static final String[] ALLOWED_NOSQL = {"json", "xml"};
 
     public void batch() throws IOException {
         // Get directory

@@ -1,4 +1,4 @@
-version: '3.8'
+
 
 services:
 #  springapp:
@@ -22,11 +22,21 @@ services:
     image: phpmyadmin/phpmyadmin
     restart: always
     ports:
-      - "8081:80"
+      - "8082:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
     depends_on:
       - db
+
+#  mongodb
+  mongodb:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    ports:
+      - "27017:27017"
 
 # how to use "docker-compose up --build"
