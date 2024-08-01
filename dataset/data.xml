@@ -1,4 +1,4 @@
-<root>
+<people>
     <person>
         <id>1</id>
         <name>John Doe</name>
@@ -29,4 +29,4 @@
         <age>35</age>
         <city>Phoenix</city>
     </person>
-</root>
+</people>

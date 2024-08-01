@@ -1,11 +1,8 @@
 package com.batch.service;
 
-import com.batch.dto.request.UserReq;
-import com.batch.entity.mongodb.User;
 import com.batch.dto.response.ResponseGeneral;
 import com.batch.dto.response.ResponseWithData;
-import com.batch.repository.mongodb.UserRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.batch.repository.mongodb.PersonNosqlRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -29,11 +27,14 @@ import java.util.List;
 public class FileManagementService {
 
     private static final String LOCAL_STORE_DIR = "localStore";
-    private static final String BACKUP_STORE_DIR = "backupStore";
     private static final String[] ALLOWED_FILE_TYPES = {"txt", "csv", "xlsx", "json", "xml"};
+    private static final String[] ALLOWED_TYPE = {
+            "sql",
+            "nosql"
+    };
 
     @Autowired
-    private UserRepository userRepository;
+    private PersonNosqlRepository personNosqlRepository;
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -44,12 +45,24 @@ public class FileManagementService {
      * In java.nio
      */
 
-    public Object uploadFile(MultipartFile fileUpload) {
+    public Object uploadFile(MultipartFile fileUpload, String type) {
         String message;
 
         // Check if the file is empty
-        if (fileUpload.isEmpty()){
+        if (fileUpload.isEmpty()) {
             message = "Please select file to upload.";
+            return new ResponseGeneral(Integer.toString(400), message);
+        }
+
+        // Check if the type is empty
+        if (type.isEmpty()) {
+            message = "Please select type.";
+            return new ResponseGeneral(Integer.toString(400), message);
+        }
+
+        // Check type is correct
+        if (!checkType(type)) {
+            message = "Type incorrect.";
             return new ResponseGeneral(Integer.toString(400), message);
         }
 
@@ -59,12 +72,16 @@ public class FileManagementService {
             return new ResponseGeneral(Integer.toString(400), message);
         }
 
-        // Ensure the directory exists and prepare it
-        File dir = checkDirectoryAndPrepare(LOCAL_STORE_DIR);
 
+        // Ensure the local directory exists and prepare it
+        File dir = checkDirectoryAndPrepare(LOCAL_STORE_DIR);
+        System.out.println(dir.toString());
+        File subDir = checkDirectoryAndPrepare(dir + "\\" + generateDirectoryNameByDate());
+        System.out.println(subDir.toString());
+        File typeDir = checkDirectoryAndPrepare(subDir + "\\" + type);
         try {
             // Define destination file
-            Path destinationFile = Paths.get(dir + "\\" + fileUpload.getOriginalFilename());
+            Path destinationFile = Paths.get(typeDir + "\\" + fileUpload.getOriginalFilename());
             // save file
             fileUpload.transferTo(destinationFile);
             message = "Upload successful";
@@ -89,7 +106,7 @@ public class FileManagementService {
                     fileLists.add(new FileRespond(path.getFileName().toString(), dateCreate));
                 }
 
-                deleteFileByCheckEqualsBetweenPathAndFilename(path,"New Microsoft Excel Worksheet.xlsx");
+                deleteFileByCheckEqualsBetweenPathAndFilename(path, "New Microsoft Excel Worksheet.xlsx");
             }
             message = "Get all files successful.";
             return new ResponseWithData(Integer.toString(200), message, fileLists);
@@ -98,25 +115,6 @@ public class FileManagementService {
             message = "File get file lists" + e;
             return new ResponseGeneral(Integer.toString(400), message);
         }
-    }
-
-    public Object deleteFile(String filename) {
-        return null;
-    }
-
-    public void testAddUser(String req) throws JsonProcessingException {
-        UserReq userReq = objectMapper.readValue(req,UserReq.class);
-        User user = objectMapper.convertValue(userReq,User.class);
-        System.out.println("user:"+user);
-        System.out.println(userRepository.save(user).getId());
-    }
-
-    public  Object getUser(){
-        return userRepository.findAll();
-    }
-
-    public Object getByName(String name){
-        return userRepository.findByName(name);
     }
 
     // ### private method ###
@@ -166,6 +164,25 @@ public class FileManagementService {
         } else {
             return false;
         }
+    }
+
+    private String generateDirectoryNameByDate() {
+        LocalDate localDate = LocalDate.now();
+        String date = localDate.format(DateTimeFormatter.ofPattern("dd_MM_yyyy"));
+        return "Date" + date;
+    }
+
+    private boolean checkType(String type) {
+        for (String allowType : ALLOWED_TYPE) {
+            if (allowType.equalsIgnoreCase(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getFileType(MultipartFile fileUpload) {
+        return fileUpload.getOriginalFilename().substring(fileUpload.getOriginalFilename().lastIndexOf('.') + 1);
     }
 
 

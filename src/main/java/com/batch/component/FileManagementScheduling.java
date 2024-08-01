@@ -1,6 +1,9 @@
 package com.batch.component;
 
+import com.batch.repository.mongodb.PersonNosqlRepository;
 import com.batch.service.Batch;
+import com.opencsv.exceptions.CsvValidationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -39,10 +42,12 @@ public class FileManagementScheduling {
 //        System.out.println("Fixed cron task - Every minute");
 //    }
 
+    @Autowired
+    private Batch batch;
+
 //    @Scheduled(cron = "30 * * * * ?")
-    @Scheduled(fixedRate = 5000)
-    private void scheduleCronSecondTask() throws IOException {
-        Batch batch = new Batch();
+    @Scheduled(fixedRate = 10000)
+    private void scheduleCronSecondTask() throws IOException, CsvValidationException {
         batch.batch();
     }
 

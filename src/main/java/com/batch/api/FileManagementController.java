@@ -22,33 +22,15 @@ public class FileManagementController {
     }
 
     @PostMapping
-    @RequestMapping("/upload")
-    public Object upload(@RequestParam("file") MultipartFile file){
-        return fileManagementService.uploadFile(file);
+    @RequestMapping("/upload/{type}")
+    public Object upload(@RequestParam("file") MultipartFile file,@PathVariable String type){
+        return fileManagementService.uploadFile(file,type);
     }
 
     @GetMapping
     @RequestMapping("/getFileLists")
     public Object getFileList(){
         return fileManagementService.getAllFilesFromDirectory();
-    }
-
-    @GetMapping
-    @RequestMapping("/test/add")
-    public void test(@RequestBody String req) throws JsonProcessingException {
-        fileManagementService.testAddUser(req);
-    }
-
-    @GetMapping
-    @RequestMapping("/test")
-    public Object testGetAll(){
-       return fileManagementService.getUser();
-    }
-
-    @GetMapping
-    @RequestMapping("/test/get/{name}")
-    public Object testGetByName(@PathVariable String name){
-        return fileManagementService.getByName(name);
     }
 
     @Data
