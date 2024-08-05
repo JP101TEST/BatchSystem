@@ -1,0 +1,98 @@
+[
+  {
+    "first_name": "Daile",
+    "last_name": "Itzkovitch",
+    "gender": "Female",
+    "age": 30,
+    "hobbies": ["reading", "swimming"],
+    "address": {
+      "street": "123 Main St",
+      "city": "Bangkok",
+      "country": "Thailand"
+    }
+  },
+  {
+    "first_name": "Brannon",
+    "last_name": "Rymmer",
+    "gender": "Male",
+    "job": "Software Engineer"
+  },
+  {
+    "first_name": "Mark",
+    "last_name": "Silman",
+    "gender": "Male",
+    "skills": ["Java", "MongoDB", "Spring Boot"]
+  },
+  {
+    "first_name": "Michail",
+    "last_name": "Melluish",
+    "gender": "Genderqueer"
+  },
+  {
+    "first_name": "Alyssa",
+    "last_name": "Plaid",
+    "gender": "Female",
+    "age": 25
+  },
+  {
+    "first_name": "Gene",
+    "last_name": "Moen",
+    "gender": "Female",
+    "languages": ["English", "Spanish"]
+  },
+  {
+    "first_name": "Katuscha",
+    "last_name": "Cannon",
+    "gender": "Female"
+  },
+  {
+    "first_name": "Dorian",
+    "last_name": "Meiningen",
+    "gender": "Bigender",
+    "contact": {
+      "email": "dorian@example.com",
+      "phone": "123-456-7890"
+    }
+  },
+  {
+    "first_name": "Lyell",
+    "last_name": "Heiton",
+    "gender": "Male",
+    "projects": [
+      {
+        "name": "Project A",
+        "duration": "6 months"
+      },
+      {
+        "name": "Project B",
+        "duration": "1 year"
+      }
+    ]
+  },
+  {
+    "first_name": "Tan",
+    "last_name": "McKeney",
+    "gender": "Agender",
+    "interests": ["photography", "traveling"]
+  },
+  {
+    "first_name": "Cati",
+    "last_name": "Beazley",
+    "gender": "Female",
+    "certifications": ["Certified Java Developer", "Certified MongoDB Developer"]
+  },
+  {
+    "first_name": "Matthus",
+    "last_name": "Pozzi",
+    "gender": "Male"
+  },
+  {
+    "first_name": "Desirae",
+    "last_name": "Keble",
+    "gender": "Female",
+    "social_media": {
+      "twitter": "@desirae",
+      "linkedin": "linkedin.com/in/desirae"
+    }
+  }
+]

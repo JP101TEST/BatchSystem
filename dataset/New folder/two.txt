@@ -1,0 +1,1 @@
+{"_id":{"$oid":"66ac6297aa71a141d0f992d5"},"first_name":"Daile","last_name":"Itzkovitch","gender":"Female","age":30,"hobbies":["reading","swimming"],"address":{"street":"123 Main St","city":"Bangkok","country":"Thailand"},"version":{"render":2.3,"search":5.2}}

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+ <people>
+     <person>
+         <first_name>Daile</first_name>
+         <last_name>Itzkovitch</last_name>
+         <gender>Female</gender>
+         <age>30</age>
+         <hobbies>reading</hobbies>
+         <hobbies>swimming</hobbies>
+         <address>
+             <street>123 Main St</street>
+             <city>Bangkok</city>
+             <country>Thailand</country>
+         </address>
+         <version>
+            <render>2.3</render>
+            <search>5.2</search>
+         </version>
+     </person>
+     <person>
+         <first_name>Brannon</first_name>
+         <last_name>Rymmer</last_name>
+         <gender>Male</gender>
+         <job>Software Engineer</job>
+     </person>
+     <person>
+         <first_name>Mark</first_name>
+         <last_name>Silman</last_name>
+         <gender>Male</gender>
+         <skills>Java</skills>
+         <skills>MongoDB</skills>
+         <skills>Spring Boot</skills>
+     </person>
+     <person>
+         <first_name>Michail</first_name>
+         <last_name>Melluish</last_name>
+         <gender>Genderqueer</gender>
+     </person>
+     <person>
+         <first_name>Alyssa</first_name>
+         <last_name>Plaid</last_name>
+         <gender>Female</gender>
+         <age>25</age>
+     </person>
+     <person>
+         <first_name>Gene</first_name>
+         <last_name>Moen</last_name>
+         <gender>Female</gender>
+         <languages>English</languages>
+         <languages>Spanish</languages>
+     </person>
+     <person>
+         <first_name>Katuscha</first_name>
+         <last_name>Cannon</last_name>
+         <gender>Female</gender>
+     </person>
+     <person>
+         <first_name>Dorian</first_name>
+         <last_name>Meiningen</last_name>
+         <gender>Bigender</gender>
+         <contact>
+             <email>dorian@example.com</email>
+             <phone>123-456-7890</phone>
+         </contact>
+     </person>
+     <person>
+         <first_name>Lyell</first_name>
+         <last_name>Heiton</last_name>
+         <gender>Male</gender>
+         <projects>
+             <name>Project A</name>
+             <duration>6 months</duration>
+         </projects>
+         <projects>
+             <name>Project B</name>
+             <duration>1 year</duration>
+         </projects>
+     </person>
+     <person>
+         <first_name>Tan</first_name>
+         <last_name>McKeney</last_name>
+         <gender>Agender</gender>
+         <interests>photography</interests>
+         <interests>traveling</interests>
+     </person>
+     <person>
+         <first_name>Cati</first_name>
+         <last_name>Beazley</last_name>
+         <gender>Female</gender>
+         <certifications>Certified Java Developer</certifications>
+         <certifications>Certified MongoDB Developer</certifications>
+     </person>
+     <person>
+         <first_name>Matthus</first_name>
+         <last_name>Pozzi</last_name>
+         <gender>Male</gender>
+     </person>
+     <person>
+         <first_name>Desirae</first_name>
+         <last_name>Keble</last_name>
+         <gender>Female</gender>
+         <social_media>
+             <twitter>@desirae</twitter>
+             <linkedin>linkedin.com/in/desirae</linkedin>
+         </social_media>
+     </person>
+ </people>

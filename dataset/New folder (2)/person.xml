@@ -12,6 +12,10 @@
              <city>Bangkok</city>
              <country>Thailand</country>
          </address>
+         <version>
+            <render>2.3</render>
+            <search>5.2</search>
+         </version>
      </person>
      <person>
          <first_name>Brannon</first_name>
