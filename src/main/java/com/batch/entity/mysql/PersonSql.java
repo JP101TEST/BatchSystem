@@ -11,13 +11,12 @@ public class PersonSql {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "person_id")
     private long id;
-
     @Column(nullable = false,unique = true)
-    private String name;
-
+    private String username;
     @Column(nullable = false)
-    private String age;
-
+    private String first_name;
     @Column(nullable = false)
-    private String city;
+    private String last_name;
+    @Column(nullable = false)
+    private String gender;
 }

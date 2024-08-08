@@ -2,7 +2,6 @@ package com.batch.service;
 
 import com.batch.dto.response.ResponseGeneral;
 import com.batch.dto.response.ResponseWithData;
-import com.batch.repository.mongodb.PersonNosqlRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +32,6 @@ public class FileManagementService {
             "nosql"
     };
 
-    @Autowired
-    private PersonNosqlRepository personNosqlRepository;
     @Autowired
     private ObjectMapper objectMapper;
 

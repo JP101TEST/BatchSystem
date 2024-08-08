@@ -1,6 +1,5 @@
 package com.batch.service;
 
-import com.batch.repository.mongodb.PersonNosqlRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -42,16 +41,10 @@ public class Batch {
     private static final String[] ALLOWED_NAME_FILE_NOSQL = {"person", "school"};
     private static final String[] ALLOWED_TYPE = {
             "sql",
-            "nosql",
-            "inProcess"
+            "nosql"
     };
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final PersonNosqlRepository personNosqlRepository;
-
-    public Batch(PersonNosqlRepository personNosqlRepository) {
-        this.personNosqlRepository = personNosqlRepository;
-    }
 
     private static Object parseValue(String value) {
         if (value == null || value.isEmpty()) {
@@ -421,7 +414,6 @@ public class Batch {
 
                         // Fetch existing document from the collection
                         Document existingDocument = collection.find(query).first();
-
                         if (existingDocument != null && !existingDocument.isEmpty()) {
                             if (fields[0].equals("data")) {
                                 //System.out.println(existingDocument.get("name"));
@@ -651,6 +643,7 @@ public class Batch {
         int subDirectoryCount = 0;
         for (File file : files) {
             if (!file.isDirectory()) {
+                if (file.getName() == "")
                 Files.delete(file.toPath());
 //                System.out.println("Delete file.");
             } else {

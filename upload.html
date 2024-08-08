@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <label>username</label>
+    <input type="text" id="username">
+    <br>
+    <label>gender</label>
+    <select id="gender">
+        <option value="Male">male</option>
+        <option value="Female">female</option>
+        <option value="" selected>all</option>
+    </select>
+    <br>
+    <label>dediae.mvp</label>
+    <input type="text" id="dediae.mvp">
+    <br>
+    <label>dediae.mvps</label>
+    <select id="dediae.mvps">
+        <option value="True">true</option>
+        <option value="" selected>empty</option>
+    </select>
+    <br>
+    <label>dediae.normale</label>
+    <input type="text" id="dediae.normale">
+    <br>
+    <br>
+    <p id="errorDisplay"></p>
+    <button onclick="download()">Download</button>
+    <button onclick="preview()">Preview</button>
+    <br>
+    <div style="display: flex;align-items: center;">
+        <h3>Equal search</h3>
+        <div style="width: 20px;"></div><button onclick="toggleDisplay('showEqual','showEqualButton')" id="showEqualButton">^</button>
+    </div>
+    <div id="showEqual">
+    </div>
+    <div style="display: flex;align-items: center;">
+        <h3>Like search</h3>
+        <div style="width: 20px;"></div><button onclick="toggleDisplay('showLike','showLikeButton')" id="showLikeButton">^</button>
+    </div>
+    <div id="showLike">
+
+    </div>
+</body>
+<script>
+    function download() {
+        document.getElementById("errorDisplay").innerHTML = "";
+        const username = document.getElementById("username").value;
+        const gender = document.getElementById("gender").value;
+        const dediae_mvp = document.getElementById("dediae.mvp").value;
+        const dediae_mvps = document.getElementById("dediae.mvps").value;
+        const dediae_normale = document.getElementById("dediae.normale").value;
+        let boolMvp;
+        if (dediae_mvps === "True") {
+            boolMvp = true;
+        } else if (dediae_mvps === "False") {
+            boolMvp = false;
+        } else {
+            boolMvp = null;
+        }
+        const data = {
+            "username": username,
+            "gender": gender,
+            "dediae.mvp": dediae_mvp,
+            "dediae.mvps": boolMvp,
+            "dediae.normale": dediae_normale
+        };
+        startDownload(data);
+    }
+
+    function preview() {
+        document.getElementById("errorDisplay").innerHTML = "";
+        toggleDisplayDefault('showEqual','showEqualButton');
+        toggleDisplayDefault('showLike','showLikeButton');
+        const username = document.getElementById("username").value;
+        const gender = document.getElementById("gender").value;
+        const dediae_mvp = document.getElementById("dediae.mvp").value;
+        const dediae_mvps = document.getElementById("dediae.mvps").value;
+        const dediae_normale = document.getElementById("dediae.normale").value;
+        let boolMvp;
+        if (dediae_mvps === "True") {
+            boolMvp = true;
+        } else if (dediae_mvps === "False") {
+            boolMvp = false;
+        } else {
+            boolMvp = null;
+        }
+        const data = {
+            "username": username,
+            "gender": gender,
+            "dediae.mvp": dediae_mvp,
+            "dediae.mvps": boolMvp,
+            "dediae.normale": dediae_normale
+        };
+        startPreview(data);
+    }
+
+    async function startDownload(data) {
+        const url = "http://localhost:8080/download";
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const json = await response.json();
+            if (json.like.length === 0 && json.equal.length === 0) {
+                document.getElementById("errorDisplay").innerHTML = "Data from search is empty.";
+                return;
+            }
+            const blob = await response.blob();
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = downloadUrl;
+            a.download = 'data.json';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+
+    async function startPreview(data) {
+        const url = "http://localhost:8080/search";
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const data_response = await response.json()
+            const showEqual = document.getElementById("showEqual");
+            const showLike = document.getElementById("showLike");
+            let content = ``;
+            showEqual.innerHTML = content;
+            showLike.innerHTML = content;
+            if (data_response.data.equal.length > 0) {
+                const showEqualHead = Object.entries(data_response.data.equal[0]);
+                for (let index = 0; index < data_response.data.equal.length; index++) {
+                    const row = Object.entries(data_response.data.equal[index]);
+                    content += `<br>`;
+                    for (let indexRow = 1; indexRow < row.length; indexRow++) {
+                        content += JSON.stringify(row[indexRow]);
+                        if (indexRow < row.length - 1) {
+                            content += ` , `;
+                        }
+                    }
+                    content += `<br>------------------------------------------------------------------<br>`;
+                }
+                showEqual.innerHTML = content;
+            }else{
+                showEqual.innerHTML = "Data from preview is empty.";
+            }
+
+            if (data_response.data.like.length > 0) {
+                content = ``;
+                const showLikeHead = Object.entries(data_response.data.like[0]);
+                for (let index = 0; index < data_response.data.like.length; index++) {
+                    const row = Object.entries(data_response.data.like[index]);
+                    for (let indexRow = 1; indexRow < row.length; indexRow++) {
+                        content += JSON.stringify(row[indexRow]);
+                        if (indexRow < row.length - 1) {
+                            content += ` , `;
+                        }
+                    }
+                    content += `<br>------------------------------------------------------------------<br>`;
+                }
+                showLike.innerHTML = content;
+            }else{
+                showLike.innerHTML = "Data from preview is empty.";
+            }
+
+        } catch (error) {
+            console.error(error.message);
+        }
+    }
+    function toggleDisplay(idCon,idBut){
+        const displayCon = document.getElementById(idCon);
+        const displayBut = document.getElementById(idBut);
+        if (displayCon.style.display !== 'none') {
+            displayCon.style.display = 'none';
+            displayBut.innerHTML = 'v';
+        }else{
+            displayCon.style.display = 'block';
+            displayBut.innerHTML = '^';
+        }
+    }
+
+    function toggleDisplayDefault(idCon,idBut){
+        const displayCon = document.getElementById(idCon);
+        const displayBut = document.getElementById(idBut);
+            displayCon.style.display = 'block';
+            displayBut.innerHTML = '^';
+    }
+</script>
+
+
+
+</html>
