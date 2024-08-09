@@ -8,48 +8,72 @@
 </head>
 
 <body>
+    <h1 style="color: red;" id="errorDisplay"></h1>
+    <h1>Upload file</h1>
+    <label>file</label>
+    <input type="file" id="file">
+    <br><br>
+    <label>database type</label>
+    <select id="database.type">
+        <option value="sql" selected>sql</option>
+        <option value="nosql">nosql</option>
+    </select>
+    <br><br>
+    <button onclick="uplaod()">Upload</button>
+    <br>
+    <h1>Search and download</h1>
     <label>username</label>
     <input type="text" id="username">
-    <br>
+    <br><br>
     <label>gender</label>
     <select id="gender">
         <option value="Male">male</option>
         <option value="Female">female</option>
         <option value="" selected>all</option>
     </select>
-    <br>
+    <br><br>
     <label>dediae.mvp</label>
     <input type="text" id="dediae.mvp">
-    <br>
+    <br><br>
     <label>dediae.mvps</label>
     <select id="dediae.mvps">
         <option value="True">true</option>
         <option value="" selected>empty</option>
     </select>
-    <br>
+    <br><br>
     <label>dediae.normale</label>
     <input type="text" id="dediae.normale">
-    <br>
-    <br>
-    <p id="errorDisplay"></p>
-    <button onclick="download()">Download</button>
-    <button onclick="preview()">Preview</button>
+    <br><br>
+    <button onclick="download()">Search and download</button>
+    <button onclick="preview()">Search and preview</button>
     <br>
     <div style="display: flex;align-items: center;">
         <h3>Equal search</h3>
-        <div style="width: 20px;"></div><button onclick="toggleDisplay('showEqual','showEqualButton')" id="showEqualButton">^</button>
+        <div style="width: 20px;"></div><button onclick="toggleDisplay('showEqual','showEqualButton')"
+            id="showEqualButton">^</button>
     </div>
     <div id="showEqual">
     </div>
     <div style="display: flex;align-items: center;">
         <h3>Like search</h3>
-        <div style="width: 20px;"></div><button onclick="toggleDisplay('showLike','showLikeButton')" id="showLikeButton">^</button>
+        <div style="width: 20px;"></div><button onclick="toggleDisplay('showLike','showLikeButton')"
+            id="showLikeButton">^</button>
     </div>
     <div id="showLike">
 
     </div>
 </body>
 <script>
+    function uplaod() {
+        document.getElementById("errorDisplay").innerHTML = "";
+        const file = document.getElementById("file").files[0];
+        const database_type = document.getElementById("database.type").value;
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("database_type", database_type);
+        startUpload(formData);
+    }
+
     function download() {
         document.getElementById("errorDisplay").innerHTML = "";
         const username = document.getElementById("username").value;
@@ -77,8 +101,8 @@
 
     function preview() {
         document.getElementById("errorDisplay").innerHTML = "";
-        toggleDisplayDefault('showEqual','showEqualButton');
-        toggleDisplayDefault('showLike','showLikeButton');
+        toggleDisplayDefault('showEqual', 'showEqualButton');
+        toggleDisplayDefault('showLike', 'showLikeButton');
         const username = document.getElementById("username").value;
         const gender = document.getElementById("gender").value;
         const dediae_mvp = document.getElementById("dediae.mvp").value;
@@ -100,6 +124,23 @@
             "dediae.normale": dediae_normale
         };
         startPreview(data);
+    }
+    async function startUpload(formData) {
+        const url = "http://localhost:8080/upload";
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                body: formData
+            });
+            if (!response.ok) {
+                throw new Error(`Response status: ${response.status}`);
+            }
+            const json = await response.json();
+            console.log(json);
+        } catch (error) {
+            console.error(error.message);
+            document.getElementById("errorDisplay").innerHTML = error.message + " from dowload";
+        }
     }
 
     async function startDownload(data) {
@@ -128,6 +169,7 @@
             window.URL.revokeObjectURL(downloadUrl);
         } catch (error) {
             console.error(error.message);
+            document.getElementById("errorDisplay").innerHTML = error.message + " from dowload";
         }
     }
 
@@ -161,7 +203,7 @@
                     content += `<br>------------------------------------------------------------------<br>`;
                 }
                 showEqual.innerHTML = content;
-            }else{
+            } else {
                 showEqual.innerHTML = "Data from preview is empty.";
             }
 
@@ -179,31 +221,32 @@
                     content += `<br>------------------------------------------------------------------<br>`;
                 }
                 showLike.innerHTML = content;
-            }else{
+            } else {
                 showLike.innerHTML = "Data from preview is empty.";
             }
 
         } catch (error) {
             console.error(error.message);
+            document.getElementById("errorDisplay").innerHTML = error.message + " from preview";
         }
     }
-    function toggleDisplay(idCon,idBut){
+    function toggleDisplay(idCon, idBut) {
         const displayCon = document.getElementById(idCon);
         const displayBut = document.getElementById(idBut);
         if (displayCon.style.display !== 'none') {
             displayCon.style.display = 'none';
             displayBut.innerHTML = 'v';
-        }else{
+        } else {
             displayCon.style.display = 'block';
             displayBut.innerHTML = '^';
         }
     }
 
-    function toggleDisplayDefault(idCon,idBut){
+    function toggleDisplayDefault(idCon, idBut) {
         const displayCon = document.getElementById(idCon);
         const displayBut = document.getElementById(idBut);
-            displayCon.style.display = 'block';
-            displayBut.innerHTML = '^';
+        displayCon.style.display = 'block';
+        displayBut.innerHTML = '^';
     }
 </script>
 

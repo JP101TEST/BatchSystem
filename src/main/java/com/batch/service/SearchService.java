@@ -19,6 +19,11 @@ import static com.mongodb.client.model.Filters.*;
 
 @Service
 public class SearchService {
+
+    private final String MONGODB_URL = "mongodb://root:root@localhost:27017/";
+    private final String MONGODB_DATABASE = "datanosql";
+    private final String MONGODB_COLLECTION_PERSON = "person";
+
     private final ObjectMapper objectMapper;
 
     public SearchService(ObjectMapper objectMapper) {
@@ -57,19 +62,16 @@ public class SearchService {
         Map<String, Object> searchRequest;
         try {
             searchRequest = objectMapper.readValue(req, HashMap.class);
-//            System.out.println(searchRequest);
-//            System.out.println(searchRequest.keySet());
-//            System.out.println(searchRequest.values());
         } catch (Exception e) {
             return new ResponseGeneral(Integer.toString(400), "Request not correct pattern.");
         }
 
         // Connect to MongoDB
-        MongoClient mongoClient = MongoClients.create("mongodb://root:root@localhost:27017/");
+        MongoClient mongoClient = MongoClients.create(MONGODB_URL);
         // Get the database
-        MongoDatabase database = mongoClient.getDatabase("datanosql");
+        MongoDatabase database = mongoClient.getDatabase(MONGODB_DATABASE);
         // Get the collection
-        MongoCollection<Document> collection = database.getCollection("person");
+        MongoCollection<Document> collection = database.getCollection(MONGODB_COLLECTION_PERSON);
 
         List<Bson> equalSearch = new ArrayList<>();
         List<Bson> likeSearch = new ArrayList<>();

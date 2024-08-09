@@ -20,7 +20,11 @@ import java.util.Set;
 
 @Service
 public class Batching {
-
+    private final String MONGODB_URL = "mongodb://root:root@localhost:27017/";
+    private final String MONGODB_DATABASE = "datanosql";
+    private final String MONGODB_COLLECTION_ORDER = "order";
+    private final String MONGODB_COLLECTION_PERSON = "person";
+    private final boolean USER_SQL = true;
     private final ObjectMapper objectMapper;
     private final PersonSqlRepository personSqlRepository;
     private final long LIMIT_READ_LINE = 50;
@@ -31,13 +35,12 @@ public class Batching {
     }
 
     public void batch() {
-
         // Connect to MongoDB
-        MongoClient mongoClient = MongoClients.create("mongodb://root:root@localhost:27017/");
+        MongoClient mongoClient = MongoClients.create(MONGODB_URL);
         // Get the database
-        MongoDatabase database = mongoClient.getDatabase("datanosql");
+        MongoDatabase database = mongoClient.getDatabase(MONGODB_DATABASE);
         // Get the collection
-        MongoCollection<Document> collectionOrder = database.getCollection("order");
+        MongoCollection<Document> collectionOrder = database.getCollection(MONGODB_COLLECTION_ORDER);
 
         // แสดง document ที่่มีใน collection
         List<Document> allOrderDocument = new ArrayList<>();
@@ -53,12 +56,11 @@ public class Batching {
         }
 
         for (Document orderList : allOrderDocument) {
-            System.out.println("Order document : "+orderList);
+            System.out.println("Order document : " + orderList);
             JsonNode data = null;
 
             try {
                 data = objectMapper.readTree(Paths.get(orderList.getString("fileLocation")).toFile());
-                //System.out.println(data);
             } catch (Exception e) {
                 System.out.println("Can't read file");
             }
@@ -67,9 +69,9 @@ public class Batching {
             int indexCurrentRead = 0;
 
             for (startReadLine = orderList.getLong("startReadLine"); startReadLine < data.size(); startReadLine++) {
-                System.out.println("Line data size : " + data.size() +" | startReadLine : "+startReadLine);
+                System.out.println("Line data size : " + data.size() + " | startReadLine : " + startReadLine);
                 indexCurrentRead++;
-                if (indexCurrentRead > LIMIT_READ_LINE){
+                if (indexCurrentRead > LIMIT_READ_LINE) {
                     break;
                 }
 
@@ -77,10 +79,10 @@ public class Batching {
 
                 try {
                     // ### nosql ###
-                    MongoCollection<Document> collectionPerson = database.getCollection("person");
+                    MongoCollection<Document> collectionPerson = database.getCollection(MONGODB_COLLECTION_PERSON);
                     Document newDocument = Document.parse(data.get((int) startReadLine).toString());
                     //System.out.println("newDocument : " + newDocument);
-                    Document query = new Document("username",newDocument.get("username").toString());
+                    Document query = new Document("username", newDocument.get("username").toString());
                     Document findDocument = collectionPerson.find(query).first();
                     if (findDocument != null) {
                         // Identify fields to remove
@@ -102,87 +104,54 @@ public class Batching {
 
                         // Update existing fields
                         collectionPerson.updateOne(query, new Document("$set", newDocument), new UpdateOptions().upsert(true));
-                    }else {
+                    } else {
                         // Insert new document if not found
                         collectionPerson.insertOne(newDocument);
                     }
 
-
-//                    // ### sql ###
-//                    PersonSql personSql = objectMapper.readValue(data.get((int) startReadLine).toString(), PersonSql.class);
-//                    //System.out.println("personSql : " + personSql);
-//                    Optional<PersonSql> optionalPersonSql = personSqlRepository.findByUsername(personSql.getUsername());
-//                    if (optionalPersonSql.isPresent()) {
-//                        PersonSql existingPersonSql = optionalPersonSql.get();
-//                        // Update the existing entity with the new values from personSql
-//                        existingPersonSql.setFirst_name(personSql.getFirst_name());
-//                        existingPersonSql.setLast_name(personSql.getLast_name());
-//                        existingPersonSql.setGender(personSql.getGender());
-//                        // Set other fields as necessary
-//                        personSqlRepository.save(existingPersonSql);
-//                    } else {
-//                        // If no existing entity, save the new one
-//                        personSqlRepository.save(personSql);
-//                    }
+                    boolean useSql = true;
+                    if (useSql == USER_SQL) {
+                        // ### sql ###
+                        PersonSql personSql = objectMapper.readValue(data.get((int) startReadLine).toString(), PersonSql.class);
+                        //System.out.println("personSql : " + personSql);
+                        Optional<PersonSql> optionalPersonSql = personSqlRepository.findByUsername(personSql.getUsername());
+                        if (optionalPersonSql.isPresent()) {
+                            PersonSql existingPersonSql = optionalPersonSql.get();
+                            // Update the existing entity with the new values from personSql
+                            existingPersonSql.setFirst_name(personSql.getFirst_name());
+                            existingPersonSql.setLast_name(personSql.getLast_name());
+                            existingPersonSql.setGender(personSql.getGender());
+                            // Set other fields as necessary
+                            personSqlRepository.save(existingPersonSql);
+                        } else {
+                            // If no existing entity, save the new one
+                            personSqlRepository.save(personSql);
+                        }
+                    }
 
                 } catch (Exception e) {
                     System.out.println("Can't map.");
                     throw new RuntimeException(e);
                 }
-
-//                if (startReadLine == data.size()) {
-//                    try {
-//                        Files.delete(Paths.get(orderList.getString("fileLocation")));
-//                        collectionOrder.deleteOne(orderList);
-//
-//                    } catch (Exception e) {
-//                        System.out.println("Can't delete file");
-//                    }
-//                    break;
-//                }
-//                switch (orderList.getString("databaseType")) {
-//                    case "nosql":
-//                        MongoCollection<Document> collectionPerson = database.getCollection("order");
-//                        Document insertDoc = objectMapper.convertValue(data.get( (int)startReadLine).toString(), Document.class);
-//                        collectionPerson.insertOne(insertDoc);
-//                        break;
-//                    case "sql":
-////                        System.out.println(data.get(  (int)startReadLine).toString());
-//                        PersonSql insertPerson = null;
-//                        try {
-//                            insertPerson = objectMapper.readValue(data.toString(), PersonSql.class);
-//                            System.out.println(insertPerson );
-//                        } catch (Exception e) {
-//                            System.out.println("error");
-//                        }
-//                        System.out.println(insertPerson);
-//                        if (personSqlRepository.findByUsername(insertPerson.getUsername()).isEmpty()) {
-//                            personSqlRepository.save(insertPerson);
-//                        }
-//                        break;
-//                }
-//                if (startReadLine == LIMIT_READ_LINE - 1) {
-//                    OrderResponse orderUpdate = objectMapper.convertValue(orderList.toString(), OrderResponse.class);
-//                    orderUpdate.setStartReadLine(startReadLine);
-//                    Document orderUpdateDoc = new Document(objectMapper.convertValue(orderUpdate, Document.class));
-//                    collectionOrder.updateOne(orderList, orderUpdateDoc);
-//                }
             }
 
-            System.out.println("End startReadLine : "+startReadLine);
-            Bson updateReadLine = new Document("startReadLine",startReadLine);
-            Bson updateOperation = new Document("$set",updateReadLine);
-            collectionOrder.updateOne(orderList,updateOperation);
-            if (startReadLine == data.size()){
-                System.out.println("Delete order "+orderList.toString());
+            Bson updateReadLine = new Document("startReadLine", startReadLine);
+            Bson updateOperation = new Document("$set", updateReadLine);
+            collectionOrder.updateOne(orderList, updateOperation);
+            if (startReadLine == data.size()) {
+                System.out.println("Delete order " + orderList.toString());
                 ObjectId documentId = orderList.getObjectId("_id");
-                collectionOrder.deleteOne(new Document("_id",documentId));
+                collectionOrder.deleteOne(new Document("_id", documentId));
+                try {
+                    Files.delete(Paths.get(orderList.getString("fileLocation")));
+                } catch (Exception e) {
+                    System.out.println("Can't delete file.");
+                }
 
             }
             break;
 
         }
         mongoClient.close();
-        System.out.println("-------------------------------");
     }
 }

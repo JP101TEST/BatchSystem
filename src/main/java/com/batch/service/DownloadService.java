@@ -14,6 +14,7 @@ import java.util.Map;
 
 @Service
 public class DownloadService {
+
     private final ObjectMapper objectMapper;
     private final SearchService searchService;
 

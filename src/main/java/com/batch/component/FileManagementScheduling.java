@@ -26,7 +26,6 @@ public class FileManagementScheduling {
      * "0 0 12 * * ?": Every day at noon
      * "0 0 12 * * MON-FRI": Every weekday at noon
      */
-
     //    @Scheduled(cron = "30 * * * * ?")
     @Scheduled(fixedRate = 15000)
     private void scheduleCronSecondTask() {
