@@ -70,7 +70,7 @@ MOCK.csv
 ```
 ไฟล์ MOCK.csv จะไฟล์ที่ใช้สำหรับทดลองแปลงไฟล์ csv หรือ xlsx สำหรับการแปลง column ให้เป็น object json แต่ก่อนใช้ควรเข้าไปแก้ไขโค้ดใน 
 
-[src\main\java\com\batch\service\Batching.java](src\main\java\com\batch\service\Batching.java)
+[src\main\java\com\batch\service\Batching.java](src/main/java/com/batch/service/Batching.java)
 
 ในบรรทัด 112 ถึง 130 ให้ทำการปลี่ยนเป็น commented
 ``` java
