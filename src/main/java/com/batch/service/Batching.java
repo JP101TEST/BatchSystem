@@ -24,7 +24,6 @@ public class Batching {
     private final String MONGODB_DATABASE = "datanosql";
     private final String MONGODB_COLLECTION_ORDER = "order";
     private final String MONGODB_COLLECTION_PERSON = "person";
-    private final boolean USER_SQL = true;
     private final ObjectMapper objectMapper;
     private final PersonSqlRepository personSqlRepository;
     private final long LIMIT_READ_LINE = 50;
@@ -60,15 +59,15 @@ public class Batching {
                 // read file
                 if (Paths.get(orderList.getString("fileLocation")).toFile().exists()) {
                     data = objectMapper.readTree(Paths.get(orderList.getString("fileLocation")).toFile());
-                }else{
+                } else {
                     String[] locationFileSplit = orderList.getString("fileLocation").toString().split("\\\\");
                     String newLocation = "";
                     locationFileSplit[0] = "backup";
                     locationFileSplit[1] += "\\file";
-                    newLocation += locationFileSplit[0]+"\\"+locationFileSplit[1]+"\\"+locationFileSplit[2];
-                    if (Paths.get(newLocation).toFile().exists()){
+                    newLocation += locationFileSplit[0] + "\\" + locationFileSplit[1] + "\\" + locationFileSplit[2];
+                    if (Paths.get(newLocation).toFile().exists()) {
                         data = objectMapper.readTree(Paths.get(newLocation).toFile());
-                    }else{
+                    } else {
                         throw new CustomException("No file in backup.");
                     }
                 }
@@ -85,36 +84,37 @@ public class Batching {
                 }
                 System.out.println("Data : " + data.get((int) startReadLine));
                 try {
-                    // ### nosql ###
-                    MongoCollection<Document> collectionPerson = database.getCollection(MONGODB_COLLECTION_PERSON);
-                    Document newDocument = Document.parse(data.get((int) startReadLine).toString());
-                    //System.out.println("newDocument : " + newDocument);
-                    Document query = new Document("username", newDocument.get("username").toString());
-                    Document findDocument = collectionPerson.find(query).first();
-                    if (findDocument != null) {
-                        // Identify fields to remove
-                        Set<String> existingFields = findDocument.keySet();
-                        Set<String> updatedFields = newDocument.keySet();
-                        // Create $unset document
-                        Document unsetFields = new Document();
-                        for (String field : existingFields) {
-                            if (!updatedFields.contains(field) && !field.equals("_id")) {
-                                unsetFields.append(field, "");
+                    if (Paths.get(orderList.getString("fileLocation")).toFile().getName().toString().split("_")[0].equals("nosql")) {
+                        // ### nosql ###
+                        MongoCollection<Document> collectionPerson = database.getCollection(MONGODB_COLLECTION_PERSON);
+                        Document newDocument = Document.parse(data.get((int) startReadLine).toString());
+                        //System.out.println("newDocument : " + newDocument);
+                        Document query = new Document("username", newDocument.get("username").toString());
+                        Document findDocument = collectionPerson.find(query).first();
+                        if (findDocument != null) {
+                            // Identify fields to remove
+                            Set<String> existingFields = findDocument.keySet();
+                            Set<String> updatedFields = newDocument.keySet();
+                            // Create $unset document
+                            Document unsetFields = new Document();
+                            for (String field : existingFields) {
+                                if (!updatedFields.contains(field) && !field.equals("_id")) {
+                                    unsetFields.append(field, "");
+                                }
                             }
+                            // Perform update
+                            if (!unsetFields.isEmpty()) {
+                                collectionPerson.updateOne(query, new Document("$unset", unsetFields));
+                            }
+                            // Update existing fields
+                            collectionPerson.updateOne(query, new Document("$set", newDocument), new UpdateOptions().upsert(true));
+                        } else {
+                            // Insert new document if not found
+                            collectionPerson.insertOne(newDocument);
                         }
-                        // Perform update
-                        if (!unsetFields.isEmpty()) {
-                            collectionPerson.updateOne(query, new Document("$unset", unsetFields));
-                        }
-                        // Update existing fields
-                        collectionPerson.updateOne(query, new Document("$set", newDocument), new UpdateOptions().upsert(true));
                     } else {
-                        // Insert new document if not found
-                        collectionPerson.insertOne(newDocument);
-                    }
-                    boolean useSql = true;
-                    if (useSql == USER_SQL) {
                         // ### sql ###
+                        // แปลงเป็น object class entity
                         PersonSql personSql = objectMapper.readValue(data.get((int) startReadLine).toString(), PersonSql.class);
                         //System.out.println("personSql : " + personSql);
                         Optional<PersonSql> optionalPersonSql = personSqlRepository.findByUsername(personSql.getUsername());
@@ -133,7 +133,6 @@ public class Batching {
                     }
                 } catch (Exception e) {
                     System.out.println("Can't map.");
-                    throw new RuntimeException(e);
                 }
             }
             Bson updateReadLine = new Document("startReadLine", startReadLine);

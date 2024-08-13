@@ -7,7 +7,9 @@
 - เพิ่มการตั้งชื่อไฟล์ใหม่เมื่อ file มีชื่อซ้ำ
 - การตรวจเช็คชื่อไฟล์
 #### การ Batch 
-เพิ่มการดึง file จาก backup กรณีที่ file ใน local หาย
+-เพิ่มการดึง file จาก backup กรณีที่ file ใน local หาย
+- #### คำเตือน
+    - ถ้าไฟล์เป็น nosql แต่ตั้งค่า database type เป็น sql ยังไม่ได้แก้ปัญหา
 ## <a name="วิธีการติดตั้ง"></a>วิธีการติดตั้ง
 ทำการสร้าง docker ที่ [docker-compose.yml](docker-compose.yml) เพื่อเตรียม database 
 ```
@@ -59,11 +61,11 @@ mongodb://root:root@localhost:27017/
 ## <a name="ไฟล์สำหรับทดสอบ"></a>ไฟล์สำหรับทดสอบ
 ในโฟลเดอร์ dataset มีการเตรียมไฟล์ที่ใช้ในการอัปโหลด โดยการอัปโหลดจะต้องทำใน
 ```
-MOCK_DATA.csv
-MOCK_DATA.json
-MOCK_DATA.txt
-MOCK_DATA.xlsx
-MOCK_DATA.xml
+MOCK-DATA.csv
+MOCK-DATA.json
+MOCK-DATA.txt
+MOCK-DATA.xlsx
+MOCK-DATA.xml
 MOCK.csv
 ```
 ไฟล์ MOCK.csv จะไฟล์ที่ใช้สำหรับทดลองแปลงไฟล์ csv หรือ xlsx สำหรับการแปลง column ให้เป็น object json แต่ก่อนใช้ควรเข้าไปแก้ไขโค้ดใน 
