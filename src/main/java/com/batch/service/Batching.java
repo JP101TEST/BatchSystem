@@ -41,7 +41,6 @@ public class Batching {
         MongoDatabase database = mongoClient.getDatabase(MONGODB_DATABASE);
         // Get the collection
         MongoCollection<Document> collectionOrder = database.getCollection(MONGODB_COLLECTION_ORDER);
-
         // แสดง document ที่่มีใน collection
         List<Document> allOrderDocument = new ArrayList<>();
         try {
@@ -54,29 +53,37 @@ public class Batching {
         } catch (Exception e) {
             System.out.println("Can't get document form mongodb.");
         }
-
         for (Document orderList : allOrderDocument) {
             System.out.println("Order document : " + orderList);
             JsonNode data = null;
-
             try {
-                data = objectMapper.readTree(Paths.get(orderList.getString("fileLocation")).toFile());
+                // read file
+                if (Paths.get(orderList.getString("fileLocation")).toFile().exists()) {
+                    data = objectMapper.readTree(Paths.get(orderList.getString("fileLocation")).toFile());
+                }else{
+                    String[] locationFileSplit = orderList.getString("fileLocation").toString().split("\\\\");
+                    String newLocation = "";
+                    locationFileSplit[0] = "backup";
+                    locationFileSplit[1] += "\\file";
+                    newLocation += locationFileSplit[0]+"\\"+locationFileSplit[1]+"\\"+locationFileSplit[2];
+                    if (Paths.get(newLocation).toFile().exists()){
+                        data = objectMapper.readTree(Paths.get(newLocation).toFile());
+                    }else{
+                        throw new CustomException("No file in backup.");
+                    }
+                }
             } catch (Exception e) {
                 System.out.println("Can't read file");
             }
-
             long startReadLine = 0;
             int indexCurrentRead = 0;
-
             for (startReadLine = orderList.getLong("startReadLine"); startReadLine < data.size(); startReadLine++) {
                 System.out.println("Line data size : " + data.size() + " | startReadLine : " + startReadLine);
                 indexCurrentRead++;
                 if (indexCurrentRead > LIMIT_READ_LINE) {
                     break;
                 }
-
                 System.out.println("Data : " + data.get((int) startReadLine));
-
                 try {
                     // ### nosql ###
                     MongoCollection<Document> collectionPerson = database.getCollection(MONGODB_COLLECTION_PERSON);
@@ -88,7 +95,6 @@ public class Batching {
                         // Identify fields to remove
                         Set<String> existingFields = findDocument.keySet();
                         Set<String> updatedFields = newDocument.keySet();
-
                         // Create $unset document
                         Document unsetFields = new Document();
                         for (String field : existingFields) {
@@ -96,19 +102,16 @@ public class Batching {
                                 unsetFields.append(field, "");
                             }
                         }
-
                         // Perform update
                         if (!unsetFields.isEmpty()) {
                             collectionPerson.updateOne(query, new Document("$unset", unsetFields));
                         }
-
                         // Update existing fields
                         collectionPerson.updateOne(query, new Document("$set", newDocument), new UpdateOptions().upsert(true));
                     } else {
                         // Insert new document if not found
                         collectionPerson.insertOne(newDocument);
                     }
-
                     boolean useSql = true;
                     if (useSql == USER_SQL) {
                         // ### sql ###
@@ -128,13 +131,11 @@ public class Batching {
                             personSqlRepository.save(personSql);
                         }
                     }
-
                 } catch (Exception e) {
                     System.out.println("Can't map.");
                     throw new RuntimeException(e);
                 }
             }
-
             Bson updateReadLine = new Document("startReadLine", startReadLine);
             Bson updateOperation = new Document("$set", updateReadLine);
             collectionOrder.updateOne(orderList, updateOperation);
@@ -147,10 +148,8 @@ public class Batching {
                 } catch (Exception e) {
                     System.out.println("Can't delete file.");
                 }
-
             }
             break;
-
         }
         mongoClient.close();
     }

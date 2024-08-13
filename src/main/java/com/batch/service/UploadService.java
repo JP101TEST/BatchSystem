@@ -5,7 +5,10 @@ import com.batch.dto.response.ResponseGeneral;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-import com.mongodb.client.*;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
@@ -30,12 +33,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.regex.Pattern;
 
 
 @Service
 public class UploadService {
 
-    private static final String[] ALLOWED_TYPE = {
+    private static final String[] ALLOWED_DATABASE_TYPE = {
             "sql",
             "nosql"
     };
@@ -112,9 +116,13 @@ public class UploadService {
         if (file == null || file.isEmpty() || databaseType == null || databaseType.isEmpty()) {
             return new ResponseGeneral(Integer.toString(400), "Please check input from.");
         }
-        // ตรวจสอบนามสกุล file
+        // ตรวจสอบการตั้งชื่อ file
+        if (file.getOriginalFilename().contains("_")){
+            return new ResponseGeneral(Integer.toString(400), "File name can't have '_' .");
+        }
+        // ตรวจสอบประเภท database
         boolean correctType = false;
-        for (String type : ALLOWED_TYPE) {
+        for (String type : ALLOWED_DATABASE_TYPE) {
             if (type.equals(databaseType)) {
                 correctType = true;
                 break;
@@ -125,7 +133,6 @@ public class UploadService {
         }
         // แยกเอานามสกุล file กับ ชื่อ
         String[] splitFilename = Objects.requireNonNull(file.getOriginalFilename()).split("\\.");
-        String filename = splitFilename[0];
         String fileTypename = splitFilename[splitFilename.length - 1];
         // ประกาศ jsonNode หรือคือ object ประเภท json
         JsonNode data;
@@ -133,7 +140,7 @@ public class UploadService {
             // อ่านข้อมูลจาก file upload แล้วแปลงเป็น json แล้วส่งออกไปยัง data โดยต้องมีการส่ง file และนามสกุล file
             data = switchReadFile(file.getInputStream(), fileTypename);
         } catch (Exception e) {
-            return e.getMessage();
+            return new ResponseGeneral(Integer.toString(400), e.getMessage());
         }
         // ตรวจเช็ค backup directory ว่าไม่มีอยู่จริง
         if (!Files.exists(Paths.get(BACKUP_DIR))) {
@@ -154,9 +161,33 @@ public class UploadService {
             // ทำการสร้าง directory
             directoryOrigen.toFile().mkdir();
         }
-
+        // ตรวจเช็ค file ซ้ำ
+        System.out.println(directoryOrigen.toString());
+        String newFileName = databaseType + "_" + file.getOriginalFilename();
+        try {
+            List<String> fileList = Arrays.asList(directoryOrigen.toFile().list());
+            for (int index = 0; index < fileList.size(); index++) {
+                if (fileList.get(index).equals(databaseType + "_" + file.getOriginalFilename())) {
+                    int numberFile = 1;
+                    String[] fileName = file.getOriginalFilename().split("\\.");
+                    while (true) {
+                        // System.out.println(fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1]);
+                        if (!Paths.get(directoryOrigen.toString(), databaseType + "_" +fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1]).toFile().exists()) {
+                            newFileName = databaseType + "_" + fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1];
+                            break;
+                        }
+                        numberFile++;
+                    }
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            return new ResponseGeneral(Integer.toString(400), "Can't get files.");
+        }
         // ประกาศ file ที่ต้องการ upload ไปเก็บไว้ใน backup origin directory
-        Path originFile = Paths.get(directoryOrigen.toString(), file.getOriginalFilename());
+        Path originFile = Paths.get(directoryOrigen.toString(), newFileName);
+        // System.out.println("Origin file name : " + originFile.toString());
+        //return new ResponseGeneral(Integer.toString(100), "Test");
         try {
             // ทำการสร้าง file โดยการ transfer ข้อมูลจาก file ที่รับเข้ามาจาก api เข้าไปใน file ที่ต้องการเก็บ
             file.transferTo(originFile);
@@ -194,9 +225,10 @@ public class UploadService {
             dataForNewFile.add(dataLine);
             // ตรวจสอบว่า dataForNewFile ขนาดข้อมูลตามที่กำหนด
             if (dataForNewFile.size() == LIMIT_LINE) {
+                String[] newName = newFileName.split("\\.");
                 // ประกาศตำแหน่ง file ที่เกิดจากการแบ่งทั้ง local และ backup
-                Path createFileForBackup = Paths.get(backupStoreForFileSplit.toString(), databaseType + "_" + filename + "_" + fileNumber + ".txt");
-                Path createFileForLocal = Paths.get(directoryLocalThisDay.toString(), databaseType + "_" + filename + "_" + fileNumber + ".txt");
+                Path createFileForBackup = Paths.get(backupStoreForFileSplit.toString(), newName[0]+ "_path_" + fileNumber + ".txt");
+                Path createFileForLocal = Paths.get(directoryLocalThisDay.toString(), newName[0] + "_path_" + fileNumber + ".txt");
                 // เอาแหล่ง file ที่เกิดจากการแบ่งทั้ง local ไปเก็บไว้ใน locationFileToProcess
                 locationFileToProcess.add(createFileForLocal);
                 // สร้าง file ที่เกิดจากการแบ่งจาก dataForNewFile
