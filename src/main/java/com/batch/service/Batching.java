@@ -5,6 +5,7 @@ import com.batch.repository.mysql.PersonSqlRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.*;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -84,7 +85,7 @@ public class Batching {
                 }
                 System.out.println("Data : " + data.get((int) startReadLine));
                 try {
-                    if (Paths.get(orderList.getString("fileLocation")).toFile().getName().toString().split("_")[0].equals("nosql")) {
+                    if (orderList.getString("databaseType").equals("nosql")) {
                         // ### nosql ###
                         MongoCollection<Document> collectionPerson = database.getCollection(MONGODB_COLLECTION_PERSON);
                         Document newDocument = Document.parse(data.get((int) startReadLine).toString());
@@ -114,21 +115,26 @@ public class Batching {
                         }
                     } else {
                         // ### sql ###
-                        // แปลงเป็น object class entity
-                        PersonSql personSql = objectMapper.readValue(data.get((int) startReadLine).toString(), PersonSql.class);
-                        //System.out.println("personSql : " + personSql);
-                        Optional<PersonSql> optionalPersonSql = personSqlRepository.findByUsername(personSql.getUsername());
-                        if (optionalPersonSql.isPresent()) {
-                            PersonSql existingPersonSql = optionalPersonSql.get();
-                            // Update the existing entity with the new values from personSql
-                            existingPersonSql.setFirst_name(personSql.getFirst_name());
-                            existingPersonSql.setLast_name(personSql.getLast_name());
-                            existingPersonSql.setGender(personSql.getGender());
-                            // Set other fields as necessary
-                            personSqlRepository.save(existingPersonSql);
-                        } else {
-                            // If no existing entity, save the new one
-                            personSqlRepository.save(personSql);
+                        // เลือกประเภท entity ที่ต้องการแปลง
+                        switch (orderList.getString("entityType")) {
+                            case "person":
+                                // แปลงเป็น object class entity
+                                PersonSql personSql = objectMapper.readValue(data.get((int) startReadLine).toString(), PersonSql.class);
+                                //System.out.println("personSql : " + personSql);
+                                Optional<PersonSql> optionalPersonSql = personSqlRepository.findByUsername(personSql.getUsername());
+                                if (optionalPersonSql.isPresent()) {
+                                    PersonSql existingPersonSql = optionalPersonSql.get();
+                                    // Update the existing entity with the new values from personSql
+                                    existingPersonSql.setFirst_name(personSql.getFirst_name());
+                                    existingPersonSql.setLast_name(personSql.getLast_name());
+                                    existingPersonSql.setGender(personSql.getGender());
+                                    // Set other fields as necessary
+                                    personSqlRepository.save(existingPersonSql);
+                                } else {
+                                    // If no existing entity, save the new one
+                                    personSqlRepository.save(personSql);
+                                }
+                                break;
                         }
                     }
                 } catch (Exception e) {

@@ -6,10 +6,9 @@
 #### การอัปโหลด
 - เพิ่มการตั้งชื่อไฟล์ใหม่เมื่อ file มีชื่อซ้ำ
 - การตรวจเช็คชื่อไฟล์
+- การเลือก entity type
 #### การ Batch 
 -เพิ่มการดึง file จาก backup กรณีที่ file ใน local หาย
-- #### คำเตือน
-    - ถ้าไฟล์เป็น nosql แต่ตั้งค่า database type เป็น sql ยังไม่ได้แก้ปัญหา
 ## <a name="วิธีการติดตั้ง"></a>วิธีการติดตั้ง
 ทำการสร้าง docker ที่ [docker-compose.yml](docker-compose.yml) เพื่อเตรียม database 
 ```
@@ -72,11 +71,13 @@ MOCK.csv
 
 [src\main\java\com\batch\service\Batching.java](src/main/java/com/batch/service/Batching.java)
 
-ในบรรทัด 112 ถึง 130 ให้ทำการปลี่ยนเป็น commented
+ในบรรทัด 116 ถึง 130 ให้ทำการปลี่ยนเป็น commented
 ``` java
-boolean useSql = true;
-if (useSql == USER_SQL) {
-    // ### sql ###
+// ### sql ###
+// เลือกประเภท entity ที่ต้องการแปลง
+switch (orderList.getString("entityType")) {
+    case "person":
+    // แปลงเป็น object class entity
     PersonSql personSql = objectMapper.readValue(data.get((int) startReadLine).toString(), PersonSql.class);
     //System.out.println("personSql : " + personSql);
     Optional<PersonSql> optionalPersonSql = personSqlRepository.findByUsername(personSql.getUsername());
@@ -92,6 +93,7 @@ if (useSql == USER_SQL) {
         // If no existing entity, save the new one
         personSqlRepository.save(personSql);
     }
+    break;
 }
 ```
 หรือเปลี่ยนตำแปร useSql เป็น false

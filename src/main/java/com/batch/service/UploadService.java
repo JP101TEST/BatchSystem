@@ -33,7 +33,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Pattern;
 
 
 @Service
@@ -42,6 +41,9 @@ public class UploadService {
     private static final String[] ALLOWED_DATABASE_TYPE = {
             "sql",
             "nosql"
+    };
+    private static final String[] ALLOWED_SQL_ENTITY_TYPE = {
+            "person"
     };
     private final int LIMIT_LINE = 200;
     private final String LOCAL_DIR = "local";
@@ -111,13 +113,16 @@ public class UploadService {
         }
     }
 
-    public Object upload(MultipartFile file, String databaseType) {
+    public Object upload(MultipartFile file, String databaseType, String entityType) {
         // ตรวจสอบ file ที่รับเข้ามา
         if (file == null || file.isEmpty() || databaseType == null || databaseType.isEmpty()) {
-            return new ResponseGeneral(Integer.toString(400), "Please check input from.");
+            return new ResponseGeneral("400", "Please check input form.");
+        }
+        if ("sql".equals(databaseType) && (entityType == null || entityType.isEmpty())) {
+            return new ResponseGeneral("400", "If databaseType is sql, entity type can't be empty.");
         }
         // ตรวจสอบการตั้งชื่อ file
-        if (file.getOriginalFilename().contains("_")){
+        if (file.getOriginalFilename().contains("_")) {
             return new ResponseGeneral(Integer.toString(400), "File name can't have '_' .");
         }
         // ตรวจสอบประเภท database
@@ -130,6 +135,19 @@ public class UploadService {
         }
         if (!correctType) {
             return new ResponseGeneral(Integer.toString(400), "Database type correct not.");
+        }
+        // ตรวจสอบประเภท entity
+        if ("sql".equals(databaseType)) {
+            boolean correctEntityType = false;
+            for (String type : ALLOWED_SQL_ENTITY_TYPE) {
+                if (type.equals(entityType)) {
+                    correctEntityType = true;
+                    break;
+                }
+            }
+            if (!correctEntityType) {
+                return new ResponseGeneral(Integer.toString(400), "Entity type correct not.");
+            }
         }
         // แยกเอานามสกุล file กับ ชื่อ
         String[] splitFilename = Objects.requireNonNull(file.getOriginalFilename()).split("\\.");
@@ -172,7 +190,7 @@ public class UploadService {
                     String[] fileName = file.getOriginalFilename().split("\\.");
                     while (true) {
                         // System.out.println(fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1]);
-                        if (!Paths.get(directoryOrigen.toString(), databaseType + "_" +fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1]).toFile().exists()) {
+                        if (!Paths.get(directoryOrigen.toString(), databaseType + "_" + fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1]).toFile().exists()) {
                             newFileName = databaseType + "_" + fileName[0] + "_" + Integer.toString(numberFile) + "." + fileName[1];
                             break;
                         }
@@ -227,7 +245,7 @@ public class UploadService {
             if (dataForNewFile.size() == LIMIT_LINE) {
                 String[] newName = newFileName.split("\\.");
                 // ประกาศตำแหน่ง file ที่เกิดจากการแบ่งทั้ง local และ backup
-                Path createFileForBackup = Paths.get(backupStoreForFileSplit.toString(), newName[0]+ "_path_" + fileNumber + ".txt");
+                Path createFileForBackup = Paths.get(backupStoreForFileSplit.toString(), newName[0] + "_path_" + fileNumber + ".txt");
                 Path createFileForLocal = Paths.get(directoryLocalThisDay.toString(), newName[0] + "_path_" + fileNumber + ".txt");
                 // เอาแหล่ง file ที่เกิดจากการแบ่งทั้ง local ไปเก็บไว้ใน locationFileToProcess
                 locationFileToProcess.add(createFileForLocal);
@@ -250,9 +268,12 @@ public class UploadService {
         for (Path order : locationFileToProcess) {
             try {
                 // สร้าง object สำหรับสร้าง document
-                OrderResponse orderResponse = new OrderResponse(order.toString(), databaseType, Files.readAttributes(order, BasicFileAttributes.class).creationTime().toString());
+                OrderResponse orderResponse = new OrderResponse(order.toString(), databaseType,entityType, Files.readAttributes(order, BasicFileAttributes.class).creationTime().toString());
                 // สร้าง document ที่เกิดจการการ convert orderResponse
                 Document orderInMongo = new Document(objectMapper.convertValue(orderResponse, Document.class));
+                if (!"sql".equals(databaseType)) {
+                    orderInMongo.remove("entityType");
+                }
                 // ทำการ insert
                 collection.insertOne(orderInMongo);
             } catch (Exception e) {

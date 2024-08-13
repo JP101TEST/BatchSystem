@@ -23,10 +23,11 @@ public class FileManagementController {
     @RequestMapping("/upload")
     public Object uploadFrom(
             @RequestParam("file") MultipartFile file,
-            @RequestParam("database_type") String databaseType
+            @RequestParam("database_type") String databaseType,
+            @RequestParam("entity_type") String entityType
     ) {
 
-        return uploadService.upload(file, databaseType);
+        return uploadService.upload(file, databaseType,entityType);
     }
 
     @GetMapping
