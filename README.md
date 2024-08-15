@@ -132,8 +132,6 @@ MOCK-DATA.xlsx
 MOCK-DATA.xml
 MOCK.csv
 ```
-<<<<<<< HEAD
-
 ไฟล์ MOCK.csv จะไฟล์ที่ใช้สำหรับทดลองแปลงไฟล์ csv หรือ xlsx สำหรับการแปลง column ให้เป็น object json
 แต่ก่อนใช้ควรเข้าไปแก้ไขโค้ดใน
 
@@ -172,7 +170,7 @@ switch (orderList.getString("entityType")) {
 
 ไฟล์ csv
 
-``` 
+``` csv
 username,name.first_name,name.last_name,gender
 user_a, first_name_a, last_name_a
 user_b, first_name_b, last_name_b
