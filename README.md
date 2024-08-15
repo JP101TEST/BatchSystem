@@ -136,9 +136,6 @@ MOCK.csv
 
 ไฟล์ MOCK.csv จะไฟล์ที่ใช้สำหรับทดลองแปลงไฟล์ csv หรือ xlsx สำหรับการแปลง column ให้เป็น object json
 แต่ก่อนใช้ควรเข้าไปแก้ไขโค้ดใน
-=======
-ไฟล์ MOCK.csv จะไฟล์ที่ใช้สำหรับทดลองแปลงไฟล์ csv หรือ xlsx สำหรับการแปลง column ให้เป็น object json แต่ก่อนใช้ควรใช้ nosql
->>>>>>> ef1af5bc140f3446454ce07eb5fc995e53724ab3
 
 [src\main\java\com\batch\service\Batching.java](src/main/java/com/batch/service/Batching.java)
 
