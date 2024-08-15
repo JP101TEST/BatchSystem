@@ -180,7 +180,6 @@ public class UploadService {
             directoryOrigen.toFile().mkdir();
         }
         // ตรวจเช็ค file ซ้ำ
-        System.out.println(directoryOrigen.toString());
         String newFileName = databaseType + "_" + file.getOriginalFilename();
         try {
             List<String> fileList = Arrays.asList(directoryOrigen.toFile().list());
@@ -204,6 +203,7 @@ public class UploadService {
         }
         // ประกาศ file ที่ต้องการ upload ไปเก็บไว้ใน backup origin directory
         Path originFile = Paths.get(directoryOrigen.toString(), newFileName);
+        //System.out.println(originFile.getFileName());
         // System.out.println("Origin file name : " + originFile.toString());
         //return new ResponseGeneral(Integer.toString(100), "Test");
         try {
@@ -242,7 +242,7 @@ public class UploadService {
             // นำ object ที่ได้ไปเก็บใน dataForNewFile
             dataForNewFile.add(dataLine);
             // ตรวจสอบว่า dataForNewFile ขนาดข้อมูลตามที่กำหนด
-            if (dataForNewFile.size() == LIMIT_LINE) {
+            if (dataForNewFile.size() == LIMIT_LINE || dataForNewFile.size() == data.size()) {
                 String[] newName = newFileName.split("\\.");
                 // ประกาศตำแหน่ง file ที่เกิดจากการแบ่งทั้ง local และ backup
                 Path createFileForBackup = Paths.get(backupStoreForFileSplit.toString(), newName[0] + "_path_" + fileNumber + ".txt");

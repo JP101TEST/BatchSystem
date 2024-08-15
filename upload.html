@@ -44,6 +44,9 @@
     <label>dediae.normale</label>
     <input type="text" id="dediae.normale">
     <br><br>
+    <label>page</label>
+    <input type="number" id="page" min="1">
+    <br><br>
     <button onclick="download()">Search and download</button>
     <button onclick="preview()">Search and preview</button>
     <br>
@@ -108,6 +111,7 @@
         const dediae_mvp = document.getElementById("dediae.mvp").value;
         const dediae_mvps = document.getElementById("dediae.mvps").value;
         const dediae_normale = document.getElementById("dediae.normale").value;
+        const page = document.getElementById("page").value;
         let boolMvp;
         if (dediae_mvps === "True") {
             boolMvp = true;
@@ -121,7 +125,8 @@
             "gender": gender,
             "dediae.mvp": dediae_mvp,
             "dediae.mvps": boolMvp,
-            "dediae.normale": dediae_normale
+            "dediae.normale": dediae_normale,
+            "page": parseInt(page)
         };
         startPreview(data);
     }
@@ -153,11 +158,13 @@
             if (!response.ok) {
                 throw new Error(`Response status: ${response.status}`);
             }
-            const json = await response.json();
-            if (json.like.length === 0 && json.equal.length === 0) {
-                document.getElementById("errorDisplay").innerHTML = "Data from search is empty.";
-                return;
-            }
+            // const json = await response.json();
+            // console.log(json);
+            
+            // if (json.like.length === 0 && json.equal.length === 0) {
+            //     document.getElementById("errorDisplay").innerHTML = "Data from search is empty.";
+            //     return;
+            // }
             const blob = await response.blob();
             const downloadUrl = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -184,6 +191,10 @@
                 throw new Error(`Response status: ${response.status}`);
             }
             const data_response = await response.json()
+            console.log(data_response);
+            if (data_response.code !== '200') {
+                document.getElementById("errorDisplay").innerHTML = data_response.message + " from preview";
+            }
             const showEqual = document.getElementById("showEqual");
             const showLike = document.getElementById("showLike");
             let content = ``;
@@ -208,7 +219,9 @@
             }
 
             if (data_response.data.like.length > 0) {
-                content = ``;
+                content = `<div>Max page : ${data_response.data.like_total_page}</div><br>
+                <div>Current page : ${data_response.data.page_current}</div><br>
+                `;
                 const showLikeHead = Object.entries(data_response.data.like[0]);
                 for (let index = 0; index < data_response.data.like.length; index++) {
                     const row = Object.entries(data_response.data.like[index]);
@@ -227,7 +240,7 @@
 
         } catch (error) {
             console.error(error.message);
-            document.getElementById("errorDisplay").innerHTML = error.message + " from preview";
+
         }
     }
     function toggleDisplay(idCon, idBut) {

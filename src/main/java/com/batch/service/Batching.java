@@ -44,15 +44,18 @@ public class Batching {
         // แสดง document ที่่มีใน collection
         List<Document> allOrderDocument = new ArrayList<>();
         try {
-            MongoCursor<Document> cursor = collectionOrder.find().iterator();
+            // ค้นหา document ที่ไม่มี filed error
+            MongoCursor<Document> cursor = collectionOrder.find(Filters.exists("errors", false)).iterator();
             while (cursor.hasNext()) {
                 Document document = cursor.next();
-//                document.remove("_id");
+                //document.remove("_id");
                 allOrderDocument.add(document);
             }
         } catch (Exception e) {
             System.out.println("Can't get document form mongodb.");
         }
+        // แสดง document ที่มี
+        //System.out.println(allOrderDocument);
         for (Document orderList : allOrderDocument) {
             System.out.println("Order document : " + orderList);
             JsonNode data = null;
@@ -77,6 +80,7 @@ public class Batching {
             }
             long startReadLine = 0;
             int indexCurrentRead = 0;
+            boolean fileIsError = false;
             for (startReadLine = orderList.getLong("startReadLine"); startReadLine < data.size(); startReadLine++) {
                 System.out.println("Line data size : " + data.size() + " | startReadLine : " + startReadLine);
                 indexCurrentRead++;
@@ -139,7 +143,20 @@ public class Batching {
                     }
                 } catch (Exception e) {
                     System.out.println("Can't map.");
+                    System.out.println(orderList);
+                    orderList.append("errors", "Can't read and insert data please go check original file input.");
+                    // อัปเดตข้อมูลใน MongoDB โดยใช้ _id เป็นตัวค้นหา
+                    collectionOrder.updateOne(
+                            new Document("_id", orderList.get("_id")),
+                            new Document("$set", orderList),
+                            new UpdateOptions().upsert(true)
+                    );
+                    fileIsError = true;
                 }
+            }
+            // เมื่อไม่สามารถแปลงข้อมูลได้ให้ออกจากการอ่านเลย
+            if (fileIsError) {
+                break;
             }
             Bson updateReadLine = new Document("startReadLine", startReadLine);
             Bson updateOperation = new Document("$set", updateReadLine);

@@ -1,5 +1,6 @@
 package com.batch.api;
 
+import com.batch.entity.mysql.PersonSql;
 import com.batch.service.DownloadService;
 import com.batch.service.SearchService;
 import com.batch.service.UploadService;
@@ -36,6 +37,12 @@ public class FileManagementController {
         return searchService.readAll();
     }
 
+    @GetMapping
+    @RequestMapping("/getAllOrderError")
+    public Object getAllOrderError() {
+        return searchService.getAllOrderError();
+    }
+
     @CrossOrigin(origins = "http://127.0.0.1:5500/")
     @PostMapping
     @RequestMapping("/search")
@@ -49,6 +56,7 @@ public class FileManagementController {
     @PostMapping
     @RequestMapping("/download")
     public Object download(@RequestBody String req){
+        System.out.println(req);
        return downloadService.download(req);
     }
 
